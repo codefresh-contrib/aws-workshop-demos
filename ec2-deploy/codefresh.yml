@@ -1,0 +1,33 @@
+version: '1.0'
+stages:
+  - prepare
+  - build
+  - deploy
+steps:
+  main_clone:
+    title: Cloning main repository...
+    type: git-clone
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_REVISION}}'
+    stage: checkout
+  BuildMyApp:
+    title: Compiling App code
+    stage: build
+    image: 'golang:1.12'
+    commands:
+      - go build -o sample src/sample/trivial-web-server.go   
+  CreatePackerImage:
+    title: Baking VM image
+    stage: build
+    image: 'hashicorp/packer'
+    commands:
+      - packer validate aws-packer-example.hcl
+      - packer build -force aws-packer-example.hcl
+  DeployToVM:
+    title: Deploying to VM
+    stage: deploy
+    image: 'amazon/aws-cli'
+    commands:
+      - IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=kostis-demo | jq -r .Images[0].ImageId)
+      - aws ec2 run-instances --image-id $IMAGE_ID --count 1 --instance-type t2.micro --security-group-ids sg-077847d2f63340b3f --user-data file://scripts/startup.sh --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=from-packer}]'
+     
