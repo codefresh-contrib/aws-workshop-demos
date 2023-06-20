@@ -1,0 +1,53 @@
+version: '1.0'
+stages:
+  - checkout
+  - package
+  - verify
+steps:
+  main_clone:
+    title: Cloning main repository...
+    type: git-clone
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_REVISION}}'
+    stage: checkout
+  run_unit_tests:
+    title: Compile/Unit test
+    stage: package
+    image: 'maven:3.5.2-jdk-8-alpine'
+    commands:
+      - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository test    
+  build_my_image:
+    title: Building Docker Image
+    type: build
+    stage: package
+    image_name: <your docker username>/my-app-image
+    working_directory: ./
+    tags:
+    - "${{CF_SHORT_REVISION}}"
+    - latest
+    dockerfile: Dockerfile
+    registry: dockerhub
+  scan_image:
+    title: Container security scan
+    stage: verify
+    image: 'aquasec/trivy'
+    commands:
+      - trivy image docker.io/<your docker username>/my-app-image:${{CF_SHORT_REVISION}}  
+  run_integration_tests:
+    title: Integration tests
+    stage: verify
+    image: maven:3.5.2-jdk-8-alpine
+    commands:
+     - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository verify -Dserver.host=http://my-spring-app 
+    services:
+      composition:
+        my-spring-app:
+          image: '${{build_my_image}}'
+          ports:
+            - 8080
+      readiness:
+        timeoutSeconds: 30
+        periodSeconds: 15
+        image: byrnedo/alpine-curl
+        commands:
+          - "curl http://my-spring-app:8080/"      

@@ -1,0 +1,23 @@
+version: '1.0'
+stages:
+  - checkout
+  - package
+  - verify
+steps:
+  main_clone:
+    title: Cloning main repository...
+    type: git-clone
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_REVISION}}'
+    stage: checkout
+  build_my_image:
+    title: Building Docker Image
+    type: build
+    stage: package
+    image_name: <your docker username>/my-app-image
+    working_directory: ./
+    tags:
+    - "${{CF_SHORT_REVISION}}"
+    - latest
+    dockerfile: Dockerfile
+    registry: dockerhub
