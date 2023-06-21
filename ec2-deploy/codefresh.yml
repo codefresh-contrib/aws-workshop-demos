@@ -1,33 +1,45 @@
-version: '1.0'
+# More examples of Codefresh YAML can be found at
+# https://codefresh.io/docs/docs/yaml-examples/examples/
+
+version: "1.0"
+# Stages can help you organize your steps in stages
 stages:
   - prepare
   - build
   - deploy
+
 steps:
-  main_clone:
-    title: Cloning main repository...
-    type: git-clone
-    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
-    revision: '${{CF_REVISION}}'
-    stage: checkout
+  clone:
+    title: "Cloning repository"
+    type: "git-clone"
+    repo: "codefresh-contrib/aws-workshop-demos"
+    revision: "main"
+    git: "github-1"
+    stage: "prepare"
+
   BuildMyApp:
     title: Compiling App code
     stage: build
     image: 'golang:1.12'
+    working_directory: "${{clone}}/ec2-deploy"
     commands:
       - go build -o sample src/sample/trivial-web-server.go   
   CreatePackerImage:
     title: Baking VM image
     stage: build
-    image: 'hashicorp/packer'
+    image: 'hashicorp/packer:1.9'
+    working_directory: "${{clone}}/ec2-deploy"
     commands:
-      - packer validate aws-packer-example.hcl
-      - packer build -force aws-packer-example.hcl
+      - packer init .
+      - packer validate aws-packer-example.pkr.hcl
+      - packer build -force aws-packer-example.pkr.hcl
   DeployToVM:
     title: Deploying to VM
     stage: deploy
-    image: 'amazon/aws-cli'
+    image: 'amazon/aws-cli:2.11.23'
+    working_directory: "${{clone}}/ec2-deploy"
     commands:
-      - IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=kostis-demo | jq -r .Images[0].ImageId)
+      - export IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=kostis-demo | jq -r .Images[0].ImageId)
       - aws ec2 run-instances --image-id $IMAGE_ID --count 1 --instance-type t2.micro --security-group-ids sg-077847d2f63340b3f --user-data file://scripts/startup.sh --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=from-packer}]'
-     
+
+
