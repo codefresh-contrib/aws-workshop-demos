@@ -57,6 +57,6 @@ steps:
     image: 'amazon/aws-cli:2.11.23'
     working_directory: "${{clone}}/ec2-deploy"
     commands:
-      - aws ec2 run-instances --no-cli-pager --region=us-east-1 --image-id $IMAGE_ID --count 1 --instance-type t2.micro --security-group-ids sg-077847d2f63340b3f --user-data file://scripts/startup.sh --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=from-packer}]'
+      - aws ec2 run-instances --no-cli-pager --region=us-east-1 --image-id $IMAGE_ID --count 1 --instance-type t2.micro --security-group-ids sg-077847d2f63340b3f --user-data file://scripts/startup.sh --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=from-codefresh}]'
 
 
