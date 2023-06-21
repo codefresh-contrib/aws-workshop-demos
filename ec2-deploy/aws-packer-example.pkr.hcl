@@ -12,6 +12,7 @@ data "amazon-ami" "ubuntu-example" {
     name                = "ubuntu/images/*ubuntu*"
     root-device-type    = "ebs"
     virtualization-type = "hvm"
+    architecture        = "x86_64"
   }
   most_recent = true
   owners      = ["amazon"]
@@ -19,12 +20,12 @@ data "amazon-ami" "ubuntu-example" {
 }
 
 source "amazon-ebs" "ubuntu-example" {
-  ami_description             = "Packer example in AWS"
-  ami_name                    = "kostis-demo"
-  instance_type               = "t1.micro"
-  region                      = "us-east-1"
-  source_ami                  = "${data.amazon-ami.ubuntu-example.id}"
-  ssh_username                = "ubuntu"
+  ami_description = "Packer example in AWS"
+  ami_name        = "kostis-demo"
+  instance_type   = "t1.micro"
+  region          = "us-east-1"
+  source_ami      = "${data.amazon-ami.ubuntu-example.id}"
+  ssh_username    = "ubuntu"
 }
 
 build {
