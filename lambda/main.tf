@@ -69,3 +69,8 @@ resource "aws_iam_role" "function_role" {
   })
 }
 
+resource "aws_lambda_function_url" "function" {
+    function_name      = aws_lambda_function.function.function_name
+    authorization_type = "NONE"
+}
+
