@@ -14,6 +14,7 @@ steps:
     title: Compile/Unit test
     stage: package
     image: 'maven:3.5.2-jdk-8-alpine'
+    working_directory: ./simple-java-app
     commands:
       - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository test    
   build_my_image:
@@ -21,7 +22,7 @@ steps:
     type: build
     stage: package
     image_name: <your docker username>/my-app-image
-    working_directory: ./
+    working_directory: ./simple-java-app
     tags:
     - "${{CF_SHORT_REVISION}}"
     - latest
