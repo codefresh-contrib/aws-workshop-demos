@@ -38,6 +38,7 @@ steps:
     title: Integration tests
     stage: verify
     image: maven:3.5.2-jdk-8-alpine
+    working_directory: ./simple-java-app
     commands:
      - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository verify -Dserver.host=http://my-spring-app 
     services:
