@@ -25,7 +25,6 @@ steps:
     working_directory: "${{clone}}" 
     stage: infra
     commands:
-      - cp -r /codefresh/volume/sensitive/.kube/ ~/.kube 
       - cd lambda
       - terraform init
       - terraform apply -auto-approve

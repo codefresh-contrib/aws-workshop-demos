@@ -23,8 +23,7 @@ steps:
     title: "Removing lambda method"
     working_directory: "${{clone}}" 
     stage: infra
-    commands:
-      - cp -r /codefresh/volume/sensitive/.kube/ ~/.kube 
+    commands: 
       - cd lambda
       - terraform init
       - terraform destroy -auto-approve
